@@ -1,0 +1,60 @@
+research_task:
+  description: >
+    Conduct in-depth research to understand users’ needs, pain points, and behaviors. 
+    Use interviews, observations, and surveys to gather insights. Synthesize findings 
+    into user personas and journey maps.
+  expected_output: >
+    A detailed user research report including:
+    - User personas.
+    - Key pain points.
+    - Journey maps highlighting challenges and opportunities.
+
+problem_framing_task:
+  description: >
+    Analyze the insights from the Empathize stage to articulate a clear and actionable 
+    problem statement. Ensure the statement captures the core challenge and inspires 
+    innovative solutions.
+  expected_output: >
+    A problem statement document that includes:
+    - A concise problem statement.
+    - Supporting evidence from research.
+    - Constraints and criteria for solutions.
+
+idea_generation_task:
+  description: >
+    Facilitate a brainstorming session to generate a wide array of potential solutions. 
+    Encourage out-of-the-box thinking and build on each other's ideas. Organize and 
+    prioritize solutions based on feasibility and impact.
+  expected_output: >
+    A list of at least 10 creative ideas, prioritized with a short justification for each.
+
+solution_development_task:
+  description: >
+    Create tangible prototypes for the top ideas from the Ideate stage. These could be 
+    sketches, mockups, or models depending on the nature of the problem. Ensure the 
+    prototypes are ready for user feedback.
+  expected_output: >
+    A minimum of two prototypes with:
+    - Visual or functional representation.
+    - Notes on how they address the problem statement.
+
+feedback_iteration_task:
+  description: >
+    Present prototypes to users and stakeholders. Gather feedback through structured 
+    testing sessions. Identify strengths, weaknesses, and opportunities for improvement. 
+    Refine solutions based on feedback.
+  expected_output: >
+    A feedback report including:
+    - User feedback.
+    - Iteration recommendations.
+    - Next steps for the solution.
+
+reflection_task:
+  description: >
+    Reflect on the process as a team to document learnings, challenges, and successes. 
+    Identify what worked well and what could be improved for future projects.
+  expected_output: >
+    A retrospective document that includes:
+    - Key learnings.
+    - Successes and challenges.
+    - Suggestions for improvement.

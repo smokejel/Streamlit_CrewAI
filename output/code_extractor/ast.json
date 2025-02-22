@@ -1,0 +1,1202 @@
+```json
+{
+  "type": "TranslationUnit",
+  "declarations": [
+    {
+      "type": "Comment",
+      "value": " Battery Management System (BMS) for Electric Vehicle\n *\n * Features:\n * - Cell voltage monitoring\n * - Temperature monitoring\n * - State of Charge (SoC) estimation\n * - Cell balancing\n * - Fault detection\n "
+    },
+    {
+      "type": "IncludeDirective",
+      "filename": "stdio.h"
+    },
+    {
+      "type": "IncludeDirective",
+      "filename": "stdint.h"
+    },
+    {
+      "type": "IncludeDirective",
+      "filename": "stdbool.h"
+    },
+    {
+      "type": "IncludeDirective",
+      "filename": "stdlib.h"
+    },
+    {
+      "type": "IncludeDirective",
+      "filename": "string.h"
+    },
+    {
+      "type": "IncludeDirective",
+      "filename": "math.h"
+    },
+    {
+      "type": "Comment",
+      "value": " Configuration parameters"
+    },
+    {
+      "type": "MacroDefinition",
+      "name": "NUM_CELLS",
+      "value": "12"
+    },
+    {
+      "type": "MacroDefinition",
+      "name": "NUM_TEMP_SENSORS",
+      "value": "8"
+    },
+    {
+      "type": "MacroDefinition",
+      "name": "CELL_VOLTAGE_MIN",
+      "value": "2800"
+    },
+    {
+      "type": "MacroDefinition",
+      "name": "CELL_VOLTAGE_MAX",
+      "value": "4200"
+    },
+    {
+      "type": "MacroDefinition",
+      "name": "CELL_VOLTAGE_BALANCE",
+      "value": "3900"
+    },
+    {
+      "type": "MacroDefinition",
+      "name": "CELL_VOLTAGE_IMBALANCE",
+      "value": "50"
+    },
+    {
+      "type": "MacroDefinition",
+      "name": "TEMP_MIN",
+      "value": "0"
+    },
+    {
+      "type": "MacroDefinition",
+      "name": "TEMP_MAX",
+      "value": "45"
+    },
+    {
+      "type": "MacroDefinition",
+      "name": "CURRENT_MAX",
+      "value": "100"
+    },
+    {
+      "type": "MacroDefinition",
+      "name": "ADC_RESOLUTION",
+      "value": "4096"
+    },
+    {
+      "type": "MacroDefinition",
+      "name": "ADC_REFERENCE_VOLTAGE",
+      "value": "5000"
+    },
+    {
+      "type": "Comment",
+      "value": " BMS states"
+    },
+    {
+      "type": "EnumDeclaration",
+      "name": "bms_state_t",
+      "members": [
+        {
+          "name": "BMS_STATE_INIT",
+          "value": null
+        },
+        {
+          "name": "BMS_STATE_IDLE",
+          "value": null
+        },
+        {
+          "name": "BMS_STATE_CHARGING",
+          "value": null
+        },
+        {
+          "name": "BMS_STATE_DISCHARGING",
+          "value": null
+        },
+        {
+          "name": "BMS_STATE_BALANCING",
+          "value": null
+        },
+        {
+          "name": "BMS_STATE_FAULT",
+          "value": null
+        }
+      ]
+    },
+    {
+      "type": "Comment",
+      "value": " Fault codes"
+    },
+    {
+      "type": "EnumDeclaration",
+      "name": "fault_code_t",
+      "members": [
+        {
+          "name": "FAULT_NONE",
+          "value": "0x00"
+        },
+        {
+          "name": "FAULT_CELL_UNDERVOLTAGE",
+          "value": "0x01"
+        },
+        {
+          "name": "FAULT_CELL_OVERVOLTAGE",
+          "value": "0x02"
+        },
+        {
+          "name": "FAULT_PACK_UNDERVOLTAGE",
+          "value": "0x04"
+        },
+        {
+          "name": "FAULT_PACK_OVERVOLTAGE",
+          "value": "0x08"
+        },
+        {
+          "name": "FAULT_OVER_TEMPERATURE",
+          "value": "0x10"
+        },
+        {
+          "name": "FAULT_UNDER_TEMPERATURE",
+          "value": "0x20"
+        },
+        {
+          "name": "FAULT_OVERCURRENT",
+          "value": "0x40"
+        },
+        {
+          "name": "FAULT_CELL_IMBALANCE",
+          "value": "0x80"
+        }
+      ]
+    },
+    {
+      "type": "Comment",
+      "value": " BMS data structure"
+    },
+    {
+      "type": "StructDeclaration",
+      "name": "bms_data_t",
+      "members": [
+        {
+          "name": "state",
+          "type": "bms_state_t"
+        },
+        {
+          "name": "cell_voltages",
+          "type": "uint16_t",
+          "isArray": true,
+          "arraySize": "NUM_CELLS"
+        },
+        {
+          "name": "temperatures",
+          "type": "int8_t",
+          "isArray": true,
+          "arraySize": "NUM_TEMP_SENSORS"
+        },
+        {
+          "name": "current",
+          "type": "int32_t"
+        },
+        {
+          "name": "soc",
+          "type": "uint8_t"
+        },
+        {
+          "name": "capacity_remaining",
+          "type": "uint32_t"
+        },
+        {
+          "name": "capacity_full",
+          "type": "uint32_t"
+        },
+        {
+          "name": "balancing_active",
+          "type": "bool",
+          "isArray": true,
+          "arraySize": "NUM_CELLS"
+        },
+        {
+          "name": "fault_code",
+          "type": "uint8_t"
+        }
+      ]
+    },
+    {
+      "type": "Comment",
+      "value": " Function prototypes"
+    },
+    {
+      "type": "FunctionDeclaration",
+      "name": "bms_init",
+      "returnType": "void",
+      "parameters": [
+        {
+          "name": "bms",
+          "type": "bms_data_t*",
+          "isPointer": true
+        }
+      ]
+    },
+    {
+      "type": "FunctionDeclaration",
+      "name": "bms_update_measurements",
+      "returnType": "void",
+      "parameters": [
+        {
+          "name": "bms",
+          "type": "bms_data_t*",
+          "isPointer": true
+        }
+      ]
+    },
+    {
+      "type": "FunctionDeclaration",
+      "name": "bms_update_soc",
+      "returnType": "void",
+      "parameters": [
+        {
+          "name": "bms",
+          "type": "bms_data_t*",
+          "isPointer": true
+        }
+      ]
+    },
+    {
+      "type": "FunctionDeclaration",
+      "name": "bms_perform_balancing",
+      "returnType": "void",
+      "parameters": [
+        {
+          "name": "bms",
+          "type": "bms_data_t*",
+          "isPointer": true
+        }
+      ]
+    },
+    {
+      "type": "FunctionDeclaration",
+      "name": "bms_check_faults",
+      "returnType": "void",
+      "parameters": [
+        {
+          "name": "bms",
+          "type": "bms_data_t*",
+          "isPointer": true
+        }
+      ]
+    },
+    {
+      "type": "FunctionDeclaration",
+      "name": "bms_state_machine",
+      "returnType": "void",
+      "parameters": [
+        {
+          "name": "bms",
+          "type": "bms_data_t*",
+          "isPointer": true
+        }
+      ]
+    },
+    {
+      "type": "FunctionDeclaration",
+      "name": "bms_control_outputs",
+      "returnType": "void",
+      "parameters": [
+        {
+          "name": "bms",
+          "type": "bms_data_t*",
+          "isPointer": true
+        }
+      ]
+    },
+    {
+      "type": "Comment",
+      "value": " Simulated hardware interfaces"
+    },
+    {
+      "type": "FunctionDeclaration",
+      "name": "adc_read_cell_voltage",
+      "returnType": "uint16_t",
+      "parameters": [
+        {
+          "name": "cell_index",
+          "type": "uint8_t"
+        }
+      ]
+    },
+    {
+      "type": "FunctionDeclaration",
+      "name": "adc_read_temperature",
+      "returnType": "int8_t",
+      "parameters": [
+        {
+          "name": "sensor_index",
+          "type": "uint8_t"
+        }
+      ]
+    },
+    {
+      "type": "FunctionDeclaration",
+      "name": "adc_read_current",
+      "returnType": "int32_t",
+      "parameters": []
+    },
+    {
+      "type": "FunctionDeclaration",
+      "name": "set_balance_switch",
+      "returnType": "void",
+      "parameters": [
+        {
+          "name": "cell_index",
+          "type": "uint8_t"
+        },
+        {
+          "name": "state",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "type": "FunctionDeclaration",
+      "name": "set_charger_enable",
+      "returnType": "void",
+      "parameters": [
+        {
+          "name": "state",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "type": "FunctionDeclaration",
+      "name": "set_discharge_enable",
+      "returnType": "void",
+      "parameters": [
+        {
+          "name": "state",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "type": "Comment",
+      "value": " Main function"
+    },
+    {
+      "type": "FunctionDefinition",
+      "name": "main",
+      "returnType": "int",
+      "parameters": [],
+      "body": {
+        "type": "CompoundStatement",
+        "statements": [
+          {
+            "type": "VariableDeclaration",
+            "name": "bms",
+            "type": "bms_data_t"
+          },
+          {
+            "type": "FunctionCall",
+            "name": "bms_init",
+            "arguments": [
+              "&bms"
+            ]
+          },
+          {
+            "type": "Comment",
+            "value": " Main BMS loop"
+          },
+          {
+            "type": "WhileStatement",
+            "condition": {
+              "type": "Literal",
+              "value": "1"
+            },
+            "body": {
+              "type": "CompoundStatement",
+              "statements": [
+                {
+                  "type": "Comment",
+                  "value": " Update sensor readings"
+                },
+                {
+                  "type": "FunctionCall",
+                  "name": "bms_update_measurements",
+                  "arguments": [
+                    "&bms"
+                  ]
+                },
+                {
+                  "type": "Comment",
+                  "value": " Estimate State of Charge"
+                },
+                {
+                  "type": "FunctionCall",
+                  "name": "bms_update_soc",
+                  "arguments": [
+                    "&bms"
+                  ]
+                },
+                {
+                  "type": "Comment",
+                  "value": " Check for faults"
+                },
+                {
+                  "type": "FunctionCall",
+                  "name": "bms_check_faults",
+                  "arguments": [
+                    "&bms"
+                  ]
+                },
+                {
+                  "type": "Comment",
+                  "value": " Run state machine"
+                },
+                {
+                  "type": "FunctionCall",
+                  "name": "bms_state_machine",
+                  "arguments": [
+                    "&bms"
+                  ]
+                },
+                {
+                  "type": "Comment",
+                  "value": " Perform cell balancing if needed"
+                },
+                {
+                  "type": "FunctionCall",
+                  "name": "bms_perform_balancing",
+                  "arguments": [
+                    "&bms"
+                  ]
+                },
+                {
+                  "type": "Comment",
+                  "value": " Control outputs based on state"
+                },
+                {
+                  "type": "FunctionCall",
+                  "name": "bms_control_outputs",
+                  "arguments": [
+                    "&bms"
+                  ]
+                },
+                {
+                  "type": "Comment",
+                  "value": " Print status (in a real system, this would be communication with main ECU)"
+                },
+                {
+                  "type": "FunctionCall",
+                  "name": "printf",
+                  "arguments": [
+                    "\"BMS State: %d, SoC: %d%%, Fault Code: 0x%02X\\n\"",
+                    "bms.state",
+                    "bms.soc",
+                    "bms.fault_code"
+                  ]
+                },
+                {
+                  "type": "Comment",
+                  "value": " Delay for next cycle (simulated)\n                 In a real system, this would be a proper timer-based execution\n                 sleep(100); // 100ms update rate"
+                }
+              ]
+            }
+          },
+          {
+            "type": "ReturnStatement",
+            "value": "0"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Comment",
+      "value": " Initialize BMS"
+    },
+    {
+      "type": "FunctionDefinition",
+      "name": "bms_init",
+      "returnType": "void",
+      "parameters": [
+        {
+          "name": "bms",
+          "type": "bms_data_t*",
+          "isPointer": true
+        }
+      ],
+      "body": {
+        "type": "CompoundStatement",
+        "statements": [
+          {
+            "type": "FunctionCall",
+            "name": "memset",
+            "arguments": [
+              "bms",
+              "0",
+              "sizeof(bms_data_t)"
+            ]
+          },
+          {
+            "type": "Assignment",
+            "operator": "=",
+            "left": "bms->state",
+            "right": "BMS_STATE_INIT"
+          },
+          {
+            "type": "Assignment",
+            "operator": "=",
+            "left": "bms->capacity_full",
+            "right": "50000"
+          },
+          {
+            "type": "Assignment",
+            "operator": "=",
+            "left": "bms->capacity_remaining",
+            "right": "0"
+          },
+          {
+            "type": "Comment",
+            "value": " Initial measurements"
+          },
+          {
+            "type": "FunctionCall",
+            "name": "bms_update_measurements",
+            "arguments": [
+              "bms"
+            ]
+          },
+          {
+            "type": "FunctionCall",
+            "name": "bms_update_soc",
+            "arguments": [
+              "bms"
+            ]
+          },
+          {
+            "type": "Comment",
+            "value": " Transition to idle state if no faults"
+          },
+          {
+            "type": "FunctionCall",
+            "name": "bms_check_faults",
+            "arguments": [
+              "bms"
+            ]
+          },
+          {
+            "type": "IfStatement",
+            "condition": {
+              "type": "BinaryExpression",
+              "operator": "==",
+              "left": "bms->fault_code",
+              "right": "FAULT_NONE"
+            },
+            "thenStatement": {
+              "type": "Assignment",
+              "operator": "=",
+              "left": "bms->state",
+              "right": "BMS_STATE_IDLE"
+            },
+            "elseStatement": {
+              "type": "Assignment",
+              "operator": "=",
+              "left": "bms->state",
+              "right": "BMS_STATE_FAULT"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Comment",
+      "value": " Update all measurements from sensors"
+    },
+    {
+      "type": "FunctionDefinition",
+      "name": "bms_update_measurements",
+      "returnType": "void",
+      "parameters": [
+        {
+          "name": "bms",
+          "type": "bms_data_t*",
+          "isPointer": true
+        }
+      ],
+      "body": {
+        "type": "CompoundStatement",
+        "statements": [
+          {
+            "type": "Comment",
+            "value": " Read all cell voltages"
+          },
+          {
+            "type": "ForStatement",
+            "init": {
+              "type": "VariableDeclaration",
+              "name": "i",
+              "type": "int",
+              "initializer": "0"
+            },
+            "condition": {
+              "type": "BinaryExpression",
+              "operator": "<",
+              "left": "i",
+              "right": "NUM_CELLS"
+            },
+            "increment": {
+              "type": "PostfixExpression",
+              "operator": "++",
+              "operand": "i"
+            },
+            "body": {
+              "type": "CompoundStatement",
+              "statements": [
+                {
+                  "type": "Assignment",
+                  "operator": "=",
+                  "left": "bms->cell_voltages[i]",
+                  "right": {
+                    "type": "FunctionCall",
+                    "name": "adc_read_cell_voltage",
+                    "arguments": [
+                      "i"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "Comment",
+            "value": " Read all temperature sensors"
+          },
+          {
+            "type": "ForStatement",
+            "init": {
+              "type": "VariableDeclaration",
+              "name": "i",
+              "type": "int",
+              "initializer": "0"
+            },
+            "condition": {
+              "type": "BinaryExpression",
+              "operator": "<",
+              "left": "i",
+              "right": "NUM_TEMP_SENSORS"
+            },
+            "increment": {
+              "type": "PostfixExpression",
+              "operator": "++",
+              "operand": "i"
+            },
+            "body": {
+              "type": "CompoundStatement",
+              "statements": [
+                {
+                  "type": "Assignment",
+                  "operator": "=",
+                  "left": "bms->temperatures[i]",
+                  "right": {
+                    "type": "FunctionCall",
+                    "name": "adc_read_temperature",
+                    "arguments": [
+                      "i"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "Comment",
+            "value": " Read current sensor"
+          },
+          {
+            "type": "Assignment",
+            "operator": "=",
+            "left": "bms->current",
+            "right": {
+              "type": "FunctionCall",
+              "name": "adc_read_current",
+              "arguments": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Comment",
+      "value": " Update State of Charge estimation"
+    },
+    {
+      "type": "FunctionDefinition",
+      "name": "bms_update_soc",
+      "returnType": "void",
+      "parameters": [
+        {
+          "name": "bms",
+          "type": "bms_data_t*",
+          "isPointer": true
+        }
+      ],
+      "body": {
+        "type": "CompoundStatement",
+        "statements": [
+          {
+            "type": "Comment",
+            "value": " Simple SoC calculation based on average cell voltage\n         In a real system, this would use coulomb counting and more sophisticated algorithms"
+          },
+          {
+            "type": "VariableDeclaration",
+            "name": "avg_voltage",
+            "type": "uint32_t",
+            "initializer": "0"
+          },
+          {
+            "type": "ForStatement",
+            "init": {
+              "type": "VariableDeclaration",
+              "name": "i",
+              "type": "int",
+              "initializer": "0"
+            },
+            "condition": {
+              "type": "BinaryExpression",
+              "operator": "<",
+              "left": "i",
+              "right": "NUM_CELLS"
+            },
+            "increment": {
+              "type": "PostfixExpression",
+              "operator": "++",
+              "operand": "i"
+            },
+            "body": {
+              "type": "CompoundStatement",
+              "statements": [
+                {
+                  "type": "Assignment",
+                  "operator": "+=",
+                  "left": "avg_voltage",
+                  "right": "bms->cell_voltages[i]"
+                }
+              ]
+            }
+          },
+          {
+            "type": "Assignment",
+            "operator": "/=",
+            "left": "avg_voltage",
+            "right": "NUM_CELLS"
+          },
+          {
+            "type": "Comment",
+            "value": " Linear approximation between min and max voltage"
+          },
+          {
+            "type": "IfStatement",
+            "condition": {
+              "type": "BinaryExpression",
+              "operator": "<=",
+              "left": "avg_voltage",
+              "right": "CELL_VOLTAGE_MIN"
+            },
+            "thenStatement": {
+              "type": "Assignment",
+              "operator": "=",
+              "left": "bms->soc",
+              "right": "0"
+            },
+            "elseStatement": {
+              "type": "IfStatement",
+              "condition": {
+                "type": "BinaryExpression",
+                "operator": ">=",
+                "left": "avg_voltage",
+                "right": "CELL_VOLTAGE_MAX"
+              },
+              "thenStatement": {
+                "type": "Assignment",
+                "operator": "=",
+                "left": "bms->soc",
+                "right": "100"
+              },
+              "elseStatement": {
+                "type": "Assignment",
+                "operator": "=",
+                "left": "bms->soc",
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "/",
+                  "left": {
+                    "type": "BinaryExpression",
+                    "operator": "*",
+                    "left": {
+                      "type": "BinaryExpression",
+                      "operator": "-",
+                      "left": "avg_voltage",
+                      "right": "CELL_VOLTAGE_MIN"
+                    },
+                    "right": "100"
+                  },
+                  "right": {
+                    "type": "BinaryExpression",
+                    "operator": "-",
+                    "left": "CELL_VOLTAGE_MAX",
+                    "right": "CELL_VOLTAGE_MIN"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "Comment",
+            "value": " Calculate remaining capacity"
+          },
+          {
+            "type": "Assignment",
+            "operator": "=",
+            "left": "bms->capacity_remaining",
+            "right": {
+              "type": "BinaryExpression",
+              "operator": "/",
+              "left": {
+                "type": "BinaryExpression",
+                "operator": "*",
+                "left": "bms->capacity_full",
+                "right": "bms->soc"
+              },
+              "right": "100"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Comment",
+      "value": " Perform cell balancing if needed"
+    },
+    {
+      "type": "FunctionDefinition",
+      "name": "bms_perform_balancing",
+      "returnType": "void",
+      "parameters": [
+        {
+          "name": "bms",
+          "type": "bms_data_t*",
+          "isPointer": true
+        }
+      ],
+      "body": {
+        "type": "CompoundStatement",
+        "statements": [
+          {
+            "type": "Comment",
+            "value": " Only balance during charging or dedicated balancing state"
+          },
+          {
+            "type": "IfStatement",
+            "condition": {
+              "type": "BinaryExpression",
+              "operator": "&&",
+              "left": {
+                "type": "BinaryExpression",
+                "operator": "!=",
+                "left": "bms->state",
+                "right": "BMS_STATE_CHARGING"
+              },
+              "right": {
+                "type": "BinaryExpression",
+                "operator": "!=",
+                "left": "bms->state",
+                "right": "BMS_STATE_BALANCING"
+              }
+            },
+            "thenStatement": {
+              "type": "CompoundStatement",
+              "statements": [
+                {
+                  "type": "Comment",
+                  "value": " Turn off all balancing"
+                },
+                {
+                  "type": "ForStatement",
+                  "init": {
+                    "type": "VariableDeclaration",
+                    "name": "i",
+                    "type": "int",
+                    "initializer": "0"
+                  },
+                  "condition": {
+                    "type": "BinaryExpression",
+                    "operator": "<",
+                    "left": "i",
+                    "right": "NUM_CELLS"
+                  },
+                  "increment": {
+                    "type": "PostfixExpression",
+                    "operator": "++",
+                    "operand": "i"
+                  },
+                  "body": {
+                    "type": "CompoundStatement",
+                    "statements": [
+                      {
+                        "type": "IfStatement",
+                        "condition": "bms->balancing_active[i]",
+                        "thenStatement": {
+                          "type": "CompoundStatement",
+                          "statements": [
+                            {
+                              "type": "Assignment",
+                              "operator": "=",
+                              "left": "bms->balancing_active[i]",
+                              "right": "false"
+                            },
+                            {
+                              "type": "FunctionCall",
+                              "name": "set_balance_switch",
+                              "arguments": [
+                                "i",
+                                "false"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "ReturnStatement"
+                }
+              ]
+            }
+          },
+          {
+            "type": "Comment",
+            "value": " Find maximum cell voltage"
+          },
+          {
+            "type": "VariableDeclaration",
+            "name": "max_voltage",
+            "type": "uint16_t",
+            "initializer": "0"
+          },
+          {
+            "type": "ForStatement",
+            "init": {
+              "type": "VariableDeclaration",
+              "name": "i",
+              "type": "int",
+              "initializer": "0"
+            },
+            "condition": {
+              "type": "BinaryExpression",
+              "operator": "<",
+              "left": "i",
+              "right": "NUM_CELLS"
+            },
+            "increment": {
+              "type": "PostfixExpression",
+              "operator": "++",
+              "operand": "i"
+            },
+            "body": {
+              "type": "CompoundStatement",
+              "statements": [
+                {
+                  "type": "IfStatement",
+                  "condition": {
+                    "type": "BinaryExpression",
+                    "operator": ">",
+                    "left": "bms->cell_voltages[i]",
+                    "right": "max_voltage"
+                  },
+                  "thenStatement": {
+                    "type": "Assignment",
+                    "operator": "=",
+                    "left": "max_voltage",
+                    "right": "bms->cell_voltages[i]"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "Comment",
+            "value": " Only balance if max voltage is above threshold"
+          },
+          {
+            "type": "IfStatement",
+            "condition": {
+              "type": "BinaryExpression",
+              "operator": "<",
+              "left": "max_voltage",
+              "right": "CELL_VOLTAGE_BALANCE"
+            },
+            "thenStatement": {
+              "type": "CompoundStatement",
+              "statements": [
+                {
+                  "type": "Comment",
+                  "value": " Turn off all balancing"
+                },
+                {
+                  "type": "ForStatement",
+                  "init": {
+                    "type": "VariableDeclaration",
+                    "name": "i",
+                    "type": "int",
+                    "initializer": "0"
+                  },
+                  "condition": {
+                    "type": "BinaryExpression",
+                    "operator": "<",
+                    "left": "i",
+                    "right": "NUM_CELLS"
+                  },
+                  "increment": {
+                    "type": "PostfixExpression",
+                    "operator": "++",
+                    "operand": "i"
+                  },
+                  "body": {
+                    "type": "CompoundStatement",
+                    "statements": [
+                      {
+                        "type": "IfStatement",
+                        "condition": "bms->balancing_active[i]",
+                        "thenStatement": {
+                          "type": "CompoundStatement",
+                          "statements": [
+                            {
+                              "type": "Assignment",
+                              "operator": "=",
+                              "left": "bms->balancing_active[i]",
+                              "right": "false"
+                            },
+                            {
+                              "type": "FunctionCall",
+                              "name": "set_balance_switch",
+                              "arguments": [
+                                "i",
+                                "false"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "ReturnStatement"
+                }
+              ]
+            }
+          },
+          {
+            "type": "Comment",
+            "value": " Enable balancing for cells above threshold"
+          },
+          {
+            "type": "ForStatement",
+            "init": {
+              "type": "VariableDeclaration",
+              "name": "i",
+              "type": "int",
+              "initializer": "0"
+            },
+            "condition": {
+              "type": "BinaryExpression",
+              "operator": "<",
+              "left": "i",
+              "right": "NUM_CELLS"
+            },
+            "increment": {
+              "type": "PostfixExpression",
+              "operator": "++",
+              "operand": "i"
+            },
+            "body": {
+              "type": "CompoundStatement",
+              "statements": [
+                {
+                  "type": "VariableDeclaration",
+                  "name": "should_balance",
+                  "type": "bool",
+                  "initializer": {
+                    "type": "BinaryExpression",
+                    "operator": "&&",
+                    "left": {
+                      "type": "BinaryExpression",
+                      "operator": ">",
+                      "left": "bms->cell_voltages[i]",
+                      "right": "CELL_VOLTAGE_BALANCE"
+                    },
+                    "right": {
+                      "type": "BinaryExpression",
+                      "operator": ">",
+                      "left": "bms->cell_voltages[i]",
+                      "right": {
+                        "type": "BinaryExpression",
+                        "operator": "-",
+                        "left": "max_voltage",
+                        "right": "CELL_VOLTAGE_IMBALANCE"
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "IfStatement",
+                  "condition": {
+                    "type": "BinaryExpression",
+                    "operator": "!=",
+                    "left": "should_balance",
+                    "right": "bms->balancing_active[i]"
+                  },
+                  "thenStatement": {
+                    "type": "CompoundStatement",
+                    "statements": [
+                      {
+                        "type": "Assignment",
+                        "operator": "=",
+                        "left": "bms->balancing_active[i]",
+                        "right": "should_balance"
+                      },
+                      {
+                        "type": "FunctionCall",
+                        "name": "set_balance_switch",
+                        "arguments": [
+                          "i",
+                          "should_balance"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Comment",
+      "value": " Check for fault conditions"
+    },
+    {
+      "type": "FunctionDefinition",
+      "name": "bms_check_faults",
+      "returnType": "void",
+      "parameters": [
+        {
+          "name": "bms",
+          "type": "bms_data_t*",
+          "isPointer": true
+        }
+      ],
+      "body": {
+        "type": "CompoundStatement",
+        "statements": [
